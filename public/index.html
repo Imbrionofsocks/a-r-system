@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>A-system</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="loginContainer">
+    <h1>Приветствуем в A-system</h1>
+    <button id="loginButton" onclick="login()">Войти через Steam</button>
+</div>
+<div id="userData" style="display: none;">
+    <h1>Информация о пользователе</h1>
+    <div id="userInfo"></div>
+    <h2>Последние матчи</h2>
+    <div id="loader" class="loader hidden"></div>
+    <ul id="matchList"></ul>
+    <button id="prevPage">Предыдущая страница</button>
+    <button id="nextPage">Следующая страница</button>
+    <button id="logoutButton" onclick="logout()">Выход</button>
+</div>
+
+<script>
+    let currentPage = 1;
+    const pageSize = 5;
+    let allMatches = [];
+    async function login() {
+        window.location='/login'
+        await loadAllMatches();
+    }
+
+    async function loadAllMatches() {
+        const isAuthenticated = getCookie('magicCookie');
+        console.log(isAuthenticated)
+        if (isAuthenticated) {
+            document.getElementById('loader').classList.remove('hidden'); // Показать loader
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('userData').style.display = 'block';
+            const response = await fetch('/playerMetrics');
+            if (response.ok) {
+                const data = await response.json();
+                allMatches = data.metrics.reverse();
+                updateUserInfo(data);
+                renderMatches();
+            } else {
+                document.getElementById('userInfo').innerText = 'Пожалуйста, войдите, чтобы получить данные';
+            }
+            document.getElementById('loader').classList.add('hidden'); // Скрыть loader после загрузки данных
+        } else {
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('userData').style.display = 'none';
+        }
+    }
+
+    function logout() {
+        document.cookie = 'magicCookie=false; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.reload();
+    }
+    function getCookie(name) {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                return cookie.substring(name.length + 1);
+            }
+        }
+        return null;
+    }
+    function updateUserInfo(data) {
+        document.getElementById('userInfo').innerHTML = `
+            <p>Dota ID: ${data.metrics[0].playerId}</p>
+            <p>Рейтинг: ${data.rating}</p>
+        `;
+    }
+
+    function renderMatches() {
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const matchesToShow = allMatches.slice(start, end);
+
+        const matchList = document.getElementById('matchList');
+        matchList.innerHTML = '';
+        matchesToShow.forEach(match => {
+            const result = match.win ? 'Победа' : 'Поражение';
+            const ratingChange = match.win ? `+${match.ratingChange}` : `${match.ratingChange}`;
+            const liColor = match.win ? 'green' : 'red';
+            matchList.innerHTML += `<li style="color:${liColor}">Match ID: ${match.matchId} Герой: ${match.hero_name} Результат: ${result} Изменение рейтинга: ${ratingChange}</li>`;
+        });
+    }
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderMatches();
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+        if (currentPage * pageSize < allMatches.length) {
+            currentPage++;
+            renderMatches();
+        }
+    });
+
+    window.onload = loadAllMatches;
+</script>
+</body>
+</html>

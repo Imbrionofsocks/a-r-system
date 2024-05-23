@@ -1,0 +1,55 @@
+@font-face {
+    font-display: swap;
+    font-family: Geologica;
+    font-style: normal;
+    font-weight: 500;
+    src: url('/public/fonts/Geologica-Regular.ttf');
+}
+button {
+    font-family: Geologica, serif;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+    color: white;
+}
+body{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    font-family: Geologica, serif;
+}
+#loginContainer {
+    text-align: center;
+}
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none;
+}
